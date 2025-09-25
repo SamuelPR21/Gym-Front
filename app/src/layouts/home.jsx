@@ -11,7 +11,6 @@ import ModalRoutineHome from '../componets/Routine/modalRoutineHome';
 export default function Home() {
 
   const { auth } = useAuth();
-  console.log("auth en home:", auth);
   const nameAnalysis = [
     "Progreso Peso Corporal", 
     "Progreso por Grupo Muscular",
@@ -34,7 +33,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
     let today = new Date();
-    let birthDate = new Date(auth?.user?.dateOfBirth); // Fecha de nacimiento
+    let birthDate = new Date(auth?.user?.dateOfBirth); 
     let age = today.getFullYear() - birthDate.getFullYear();
     let month = today.getMonth() - birthDate.getMonth();
     if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
