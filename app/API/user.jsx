@@ -2,9 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_USER } from "../utils/constans";
 
-/**
- * Guardar token en AsyncStorage
- */
+
 export const saveToken = async (token) => {
   try {
     await AsyncStorage.setItem("authToken", token);
@@ -14,9 +12,7 @@ export const saveToken = async (token) => {
   }
 };
 
-/**
- * Obtener token desde AsyncStorage
- */
+
 export const getToken = async () => {
   try {
     const token = await AsyncStorage.getItem("authToken");
@@ -28,9 +24,7 @@ export const getToken = async () => {
   }
 };
 
-/**
- * Realizar login y obtener token desde la API
- */
+
 export const loginApi = async (credentials) => {
   try {
     console.log("🔹 Enviando credenciales al backend:", credentials);

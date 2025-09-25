@@ -1,67 +1,130 @@
-import React, { useState } from "react";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useEffect, useState } from "react";
 import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
+import { getWeightHistoryByUserApi } from "../../../API/WeightHistory";
+import { AuthContext } from "../../../context/authContext";
+import useAuth from '../../../hook/useAuth';
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function GraphicWeightUser() {
-  // Estado para el filtro de tiempo
-  const [filter, setFilter] = useState("7d");
+  
+  const { auth } = useAuth(AuthContext);
 
-  // Datos de ejemplo según filtro
-  const dataSets = {
-    "7d": [70, 70.5, 71, 70.8, 71.2, 71, 71.5],
-    "14d": [70, 70.5, 71, 70.8, 71.2, 71, 71.5, 72, 71.8, 72.2, 72, 72.5, 72.3, 72.7],
-    "30d": [70, 70.2, 70.5, 70.8, 71, 71.2, 71.5, 71.8, 72, 72.3, 72.5, 72.7, 73, 73.2, 73.5, 73.8, 74, 74.2, 74.5, 74.7, 75],
-  };
+  const [history, setHistory] = useState([]); 
+  const [startDate, setStartDate] = useState();
+  const [endDate, setEndDate] = useState();
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+
+  
+  useEffect(() => {
+    const fetchWeightHistory = async () => {
+      try {
+        if (!auth?.user?.id) return;
+        const data = await getWeightHistoryByUserApi(auth.user.id);
+        setHistory(data);
+      } catch (error) {
+        console.error("Error al obtener el historial de peso:", error);
+      }
+    };
+
+    fetchWeightHistory();
+  }, []);
+
+  const filteredData = history.filter((item) => {
+    const itemDate = new Date(item.date);
+    if (startDate && itemDate < startDate) return false;
+    if (endDate && itemDate > endDate) return false;
+    return true;
+  })
 
   const chartData = {
-    labels: ["Día 1", "Día 2", "Día 3", "Día 4", "Día 5", "Día 6", "Día 7"],
+    labels: filteredData.map((item) =>
+      new Date(item.date).toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+      })
+    ),
     datasets: [
       {
-        data: dataSets[filter],
-        color: () => `#facc15`, // amarillo Tailwind
+        data: filteredData.map((item) => item.weight),
+        color: () => `#facc15`, // amarillo
       },
     ],
   };
 
   return (
     <View className="mt-6 px-4">
-      <Text className="text-lg font-bold text-yellow-400 mb-2">Progreso de Peso</Text>
+      <TouchableOpacity className="mb-2"
+        onPress={() => setShowStartPicker(true)}
+      >
+        <Text className="text-lg font-bold text-yellow-400">
+          {startDate
+            ? `Inicio: ${startDate.toLocaleDateString()}`
+            : "Seleccionar fecha inicio"}
+        </Text>
+      </TouchableOpacity>
 
-      {/* Botones de filtro */}
-      <View className="flex-row flex-wrap mb-4">
-        {["7d", "14d", "30d"].map((f) => (
-          <TouchableOpacity
-            key={f}
-            className={`px-3 py-1 rounded-lg mr-2 mb-2 ${
-              filter === f ? "bg-yellow-400" : "bg-gray-700"
-            }`}
-            onPress={() => setFilter(f)}
-          >
-            <Text className={`${filter === f ? "text-black" : "text-white"}`}>
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {showStartPicker && (
+        <DateTimePicker
+          value={startDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowStartPicker(false);
+            if (selectedDate) setStartDate(selectedDate);
+          }}
+        />
+      )}
 
-      {/* Gráfica */}
-      <LineChart
-        data={chartData}
-        width={screenWidth - 40} // ancho menos padding
-        height={220}
-        chartConfig={{
-          backgroundColor: "#111827", // gray-900
-          backgroundGradientFrom: "#1f2937", // gray-800
-          backgroundGradientTo: "#1f2937",
-          decimalPlaces: 1,
-          color: (opacity = 1) => `rgba(250, 204, 21, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        }}
-        bezier
-        style={{ borderRadius: 16 }}
-      />
+      <TouchableOpacity 
+        className="mb-2"
+        onPress={() => setShowEndPicker(true)}
+      >
+        <Text className="text-lg font-bold text-yellow-400">
+          {endDate
+            ? `Fin: ${endDate.toLocaleDateString()}`
+            : "Seleccionar fecha fin"}
+        </Text>
+      </TouchableOpacity>
+     
+      {showEndPicker && (
+        <DateTimePicker
+          value={endDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowEndPicker(false);
+            if (selectedDate) setEndDate(selectedDate);
+          }}
+        />
+      )}
+
+      {
+        filteredData.length > 0?(
+          <LineChart
+            data={chartData}
+            width={screenWidth - 40} 
+            height={220}
+            chartConfig={{
+              backgroundColor: "#111827", 
+              backgroundGradientFrom: "#1f2937", 
+              backgroundGradientTo: "#1f2937",
+              decimalPlaces: 1,
+              color: (opacity = 1) => `rgba(250, 204, 21, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            }}
+            bezier
+            style={{ borderRadius: 16 }}
+          />
+        ) :(
+          <Text className="text-white text-center mt-4">No hay datos. de peso en el rango de tiempo sleccionado.</Text>
+        )
+      }
+      
     </View>
   );
 }

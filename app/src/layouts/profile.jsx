@@ -72,7 +72,6 @@ export default function Profile() {
     fetchPhoto();
   }, [auth]);
 
-  //Cosumir api de elimar foto
   const handleDeletePhoto = async () => {
     try {
       if (!auth?.user?.id) return;
