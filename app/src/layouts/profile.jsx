@@ -44,7 +44,7 @@ const muscleGroupImages = {
   Biceps: bicepsImg,
   Triceps: tricepsImg,
   Hombros: hombrosImg,
-  Abdomen: abdomenImg,
+  Core: abdomenImg,
   Cuádriceps: cuadricepsImg,
   Isquiotibiales: isquiotibialesImg,
   Gemelos: gemelosImg,

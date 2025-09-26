@@ -1,28 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
+import { getExercisesByGroupMuscle } from "../../../API/exercise";
+import useAuth from '../../../hook/useAuth';
+
 
 export default function AddExercise({ onClose, onSave, exercise }) {
-  // Si recibimos `exercise` desde fuera → ya está seleccionado
+
+  const { auth } = useAuth();
+
+  const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(exercise || null);
+
+    // Si recibimos `exercise` desde fuera → ya está seleccionado
   const [group, setGroup] = useState(exercise?.group || "");
   const [series, setSeries] = useState([{ peso: "", reps: "" }]);
 
-  // Simulación DB
-  const exercisesByGroup = {
-    Pecho: [
-      { id: 1, name: "Press banca" },
-      { id: 2, name: "Aperturas con mancuernas" },
-    ],
-    Espalda: [
-      { id: 3, name: "Dominadas" },
-      { id: 4, name: "Remo con barra" },
-    ],
-    Piernas: [
-      { id: 5, name: "Sentadillas" },
-      { id: 6, name: "Prensa de pierna" },
-    ],
-  };
+
+  useEffect(() => {
+    const FetchExercises = async () => {
+      try {
+        if (!auth?.user?.id || !group) return;
+        const data = await getExercisesByGroupMuscle(group);
+        setExercises(data);
+      } catch (error) {
+        console.error("❌ Error al obtener ejercicios:", error);
+      }
+    }
+    FetchExercises();
+  },[group] );
+
+
 
   const addSeries = () => setSeries([...series, { peso: "", reps: "" }]);
 
@@ -50,16 +58,22 @@ export default function AddExercise({ onClose, onSave, exercise }) {
             Añadir Ejercicio
           </Text>
 
-          {/* Picker de grupo muscular */}
           <RNPickerSelect
             onValueChange={(val) => {
               setGroup(val);
               setSelectedExercise(null);
             }}
             items={[
-              { label: "Pecho", value: "Pecho" },
+              { label: "Pectoral", value: "Pectoral" },
               { label: "Espalda", value: "Espalda" },
-              { label: "Piernas", value: "Piernas" },
+              { label: "Biceps", value: "Biceps" },
+              {label: "Triceps", value: "Triceps"},
+              { label: "Hombros", value: "Hombros" },
+              { label: "Core", value: "Core" },
+              { label: "Cuadriceps", value: "Cuadriceps" },
+              { label: "Isquiotibiales", value: "Isquiotibiales" },
+              { label: "Gemelos", value: "Gemelos" },
+              { label: "Gluteos", value: "Gluteos" },
             ]}
             placeholder={{
               label: "Selecciona un grupo muscular",
@@ -88,7 +102,7 @@ export default function AddExercise({ onClose, onSave, exercise }) {
           {/* Lista de ejercicios SOLO si no recibimos uno ya */}
           <ScrollView className="flex-1 mt-6">
             {group &&
-              exercisesByGroup[group]?.map((ex) => (
+              exercises.map((ex) => (
                 <TouchableOpacity
                   key={ex.id}
                   activeOpacity={0.8}

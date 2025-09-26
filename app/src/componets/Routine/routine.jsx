@@ -44,7 +44,7 @@ export default function Routine() {
     Biceps: Arms,
     Triceps: Arms,
     Hombros: Arms,
-    Abdomen: Torso,
+    Core: Torso,
     Cuádriceps: Legs,
     Isquiotibiales: Legs,
     Gemelos: Legs,
@@ -119,12 +119,7 @@ export default function Routine() {
             <Text className="text-white text-center text-lg mb-4">
               No hay ejercdsicios en esta rutina. ¡Agsrega algunos para empezar!
             </Text>
-            <TouchableOpacity
-              className="bg-yellow-400 rounded-full w-16 h-16 items-center justify-center shadow-lg"
-              onPress={() => setOpenModal(true)}
-            >
-              <Text className="text-white text-3xl font-bold">+</Text>
-            </TouchableOpacity>
+            
           </View>
         )}
       </ScrollView>
