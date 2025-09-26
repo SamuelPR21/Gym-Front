@@ -83,30 +83,3 @@ export const createRoutineApi = async (routineData) => {
         throw error;
     }
 }
-
-export const getAllExercisesByRoutineIdApi = async (routineId) => {
-
-    try{
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("No se encontró el token de autenticación");
-        
-        console.log("🔹 Token de autenticación obtenido:", token);
-    
-        console.log("🔹 Obtetniendo ejercicios para la rutina ID:", routineId);
-    
-        const response = await axios.get(`${API_ROUTINE_BY_USER}/${routineId}/exercises`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-        });
-        
-        console.log("✅ Ejercicios recibidos de la API:", response.data);
-        return response.data;
-    }catch(error){
-        console.error(
-            " Error en la comunicación de API al obtener ejercicios de rutina:",
-            error.response?.data || error.message
-            );
-            throw error;
-    }
-}
